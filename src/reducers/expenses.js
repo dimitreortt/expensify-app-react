@@ -5,10 +5,12 @@ const expensesReducerDefaultState = [];
 export default (state = expensesReducerDefaultState, action) => {
   switch (action.type) {
     case 'ADD_EXPENSE':
-      return [
-        ...state,
-        action.expense
-      ];
+      // console.log('aiaoiaoia');
+      return state.concat(action.expense)
+    // return [
+    //   ...state,
+    //   action.expense
+    // ];
     case 'REMOVE_EXPENSE':
       return state.filter(({ id }) => id !== action.id);
     case 'EDIT_EXPENSE':
