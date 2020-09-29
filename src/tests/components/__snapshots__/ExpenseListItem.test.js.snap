@@ -12,8 +12,7 @@ exports[`should test ExpenseListItem with given expense 1`] = `
   </NavLink>
   <p>
     350000
-     - 
-    -345600000
+    December 27th, 1969
   </p>
 </div>
 `;
