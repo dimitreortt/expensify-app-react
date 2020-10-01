@@ -1,16 +1,18 @@
-import {db} from '../firebase/firebase'
+import { db } from '../firebase/firebase'
+
+export const expensesArrayToObject = (expenses) => {
+  let expensesData = {}
+  expenses.forEach(({ description, id, note, amount, createdAt }) => {
+    expensesData[id] = { description, amount, note, createdAt }
+  })
+  return expensesData
+}
 
 // ADD_EXPENSE
 export const addExpense = (expense) => ({
   type: 'ADD_EXPENSE',
   expense
 })
-
-// const adddExpense = (dispatch, expense) => {
-//   db.ref('expenses').push(expense).then(() => {
-//     dispatch(addExpense(expense))
-//   })
-// }
 
 export const startAddExpense = (expenseData = {}) => {
   return (dispatch) => {
@@ -43,3 +45,30 @@ export const editExpense = (id, updates) => ({
   id,
   updates
 })
+
+// SET_EXPENSE
+export const setExpenses = (expenses) => ({
+  type: 'SET_EXPENSES',
+  expenses
+})
+
+const expensesSnapshotToArray = (expensesSnapshot) => {
+  let expenses = []
+  expensesSnapshot.forEach((childExpenseSnapshot) => {
+    expenses.push({
+      id: childExpenseSnapshot.key,
+      ...childExpenseSnapshot.val()
+    })
+  })
+  return expenses
+}
+
+export const startSetExpenses = () => {
+  // const expensesObject = expensesArrayToObject(expenses)
+  return (dispatch) => {
+    return db.ref('expenses').once('value').then((snapshot) => {
+      const expenses = expensesSnapshotToArray(snapshot)
+      dispatch(setExpenses(expenses))
+    })
+  }
+}
