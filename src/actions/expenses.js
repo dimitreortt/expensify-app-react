@@ -8,6 +8,17 @@ export const expensesArrayToObject = (expenses) => {
   return expensesData
 }
 
+export const expensesSnapshotToArray = (expensesSnapshot) => {
+  let expenses = []
+  expensesSnapshot.forEach((childExpenseSnapshot) => {
+    expenses.push({
+      id: childExpenseSnapshot.key,
+      ...childExpenseSnapshot.val()
+    })
+  })
+  return expenses
+}
+
 // ADD_EXPENSE
 export const addExpense = (expense) => ({
   type: 'ADD_EXPENSE',
@@ -39,6 +50,14 @@ export const removeExpense = ({ id } = {}) => ({
   id
 })
 
+export const startRemoveExpense = ({ id }) => {
+  return (dispatch) => {
+    return db.ref(`expenses/${id}`).remove().then(() => {
+      dispatch(removeExpense({ id }))
+    })
+  }
+}
+
 // EDIT_EXPENSE
 export const editExpense = (id, updates) => ({
   type: 'EDIT_EXPENSE',
@@ -46,25 +65,21 @@ export const editExpense = (id, updates) => ({
   updates
 })
 
+export const startEditExpense = (id, updates) => {
+  return (dispatch) => {
+    return db.ref(`expenses/${id}`).update(updates).then(() => {
+      dispatch(editExpense(id, updates))
+    })
+  }
+}
+
 // SET_EXPENSE
 export const setExpenses = (expenses) => ({
   type: 'SET_EXPENSES',
   expenses
 })
 
-const expensesSnapshotToArray = (expensesSnapshot) => {
-  let expenses = []
-  expensesSnapshot.forEach((childExpenseSnapshot) => {
-    expenses.push({
-      id: childExpenseSnapshot.key,
-      ...childExpenseSnapshot.val()
-    })
-  })
-  return expenses
-}
-
 export const startSetExpenses = () => {
-  // const expensesObject = expensesArrayToObject(expenses)
   return (dispatch) => {
     return db.ref('expenses').once('value').then((snapshot) => {
       const expenses = expensesSnapshotToArray(snapshot)

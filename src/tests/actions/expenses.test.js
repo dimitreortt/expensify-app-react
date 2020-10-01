@@ -1,12 +1,14 @@
 import configureMockStore from 'redux-mock-store'
 import {
   removeExpense,
+  startRemoveExpense,
   editExpense,
   addExpense,
   startAddExpense,
   setExpenses,
   startSetExpenses,
-  expensesArrayToObject
+  expensesArrayToObject,
+  startEditExpense
 } from "../../actions/expenses"
 import expenses from "../fixtures/expenses"
 import thunk from 'redux-thunk'
@@ -17,31 +19,6 @@ const createMockStore = configureMockStore([thunk])
 beforeEach((done) => {
   const expensesObject = expensesArrayToObject(expenses)
   db.ref('expenses').set(expensesObject).then(() => done())
-})
-
-test("should return an action to remove an expense", () => {
-  const result = removeExpense({ id: "asd123" })
-  expect(result).toEqual({
-    type: "REMOVE_EXPENSE",
-    id: "asd123",
-  })
-})
-
-test("should return an action to edit an expense", () => {
-  const updates = {
-    createdAt: 100,
-    amount: 3500,
-    description: "Rent bill",
-    note: "Pay fast man",
-  }
-  const result = editExpense("asd123", updates)
-  expect(result).toEqual({
-    type: "EDIT_EXPENSE",
-    id: "asd123",
-    updates: {
-      ...updates,
-    },
-  })
 })
 
 test("should return an add expense action with provided values", () => {
@@ -114,7 +91,7 @@ test('should return a set expenses action', () => {
   })
 })
 
-test('should set expenses in redux', (done) => {
+test('should fetch expenses from firebase', (done) => {
   const store = createMockStore({})
 
   store.dispatch(startSetExpenses()).then(() => {
@@ -124,56 +101,75 @@ test('should set expenses in redux', (done) => {
       expenses
     })
     done()
-
-    // db.ref('expenses').once('value').then((snapshot) => {
-    //   const expensesObject = expensesArrayToObject(expensesData)
-    //   expect(snapshot.val()).toEqual(expensesObject)
-    //   done()
-    // })
   })
 })
 
+test("should return an action to remove an expense", () => {
+  const result = removeExpense({ id: "asd123" })
+  expect(result).toEqual({
+    type: "REMOVE_EXPENSE",
+    id: "asd123",
+  })
+})
 
-/*
-const expensesObject = {
-    GHJKFirst: {
-      description: 'first at test set',
-      amount: 100,
-      note: 'primary note',
-      createdAt: 100000
-    },
-    UIOPSecond: {
-      description: 'second at test set',
-      amount: 200,
-      note: 'secondary note',
-      createdAt: 200000
-    },
-    ERTYThird: {
-      description: 'third at test set',
-      amount: 300,
-      note: 'phürd note',
-      createdAt: 300000
-    }
+test("should remove expense from firebase and store", (done) => {
+  const store = createMockStore({})
+  const id = expenses[0].id
+  store.dispatch(startRemoveExpense({ id })).then(() => {
+    const actions = store.getActions()
+    expect(actions[0]).toEqual({
+      type: 'REMOVE_EXPENSE',
+      id
+    })
+
+    db.ref(`expenses/${id}`).once('value').then((snapshot) => {
+      expect(snapshot.val()).toBeFalsy()
+      // const dbExpenses = expensesSnapshotToArray(snapshot)
+      // expect(dbExpenses).toContainEqual(expenses[1])
+      // expect(dbExpenses).toContainEqual(expenses[2])
+      // expect(expenses.length).toBe(2)
+      done()
+    })
+  })
+})
+
+test("should return an action to edit an expense", () => {
+  const updates = {
+    createdAt: 100,
+    amount: 3500,
+    description: "Rent bill",
+    note: "Pay fast man",
   }
-*/
+  const result = editExpense("asd123", updates)
+  expect(result).toEqual({
+    type: "EDIT_EXPENSE",
+    id: "asd123",
+    updates: {
+      ...updates,
+    },
+  })
+})
 
+test('should edit expense in firebase', (done) => {
+  const store = createMockStore({})
+  const updates = {
+    createdAt: 100,
+    amount: 3500,
+    description: "Rent bill",
+    note: "Pay fast man",
+  }
+  const id = expenses[1].id
+  store.dispatch(startEditExpense(id, updates)).then(() => {
+    const actions = store.getActions()
+    expect(actions[0]).toEqual({
+      type: 'EDIT_EXPENSE',
+      id,
+      updates
+    })
 
-// const expensesData = [{
-//   id: 'GHJKFirst',
-//   description: 'first at test set',
-//   amount: 100,
-//   note: 'primary note',
-//   createdAt: 100000
-// }, {
-//   id: 'UIOPSecond',
-//   description: 'second at test set',
-//   amount: 200,
-//   note: 'secondary note',
-//   createdAt: 200000
-// }, {
-//   id: 'ERTYThird',
-//   description: 'third at test set',
-//   amount: 300,
-//   note: 'phürd note',
-//   createdAt: 300000
-// }]
+    db.ref(`expenses/${id}`).once('value').then((snapshot) => {
+      expect(snapshot.val()).toEqual(updates)
+      done()
+    })
+  })
+})
