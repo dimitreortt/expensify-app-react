@@ -1,19 +1,27 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`should test ExpenseListItem with given expense 1`] = `
-<div>
-  <NavLink
-    activeClassName="active"
-    to="edit/2"
-  >
-    <h3>
+<Link
+  className="list-item"
+  replace={false}
+  to="edit/2"
+>
+  <div>
+    <h3
+      className="list-item__title"
+    >
       Annuality
     </h3>
-  </NavLink>
-  <p>
-    350000
-     - 
-    December 27th, 1969
-  </p>
-</div>
+    <span
+      className="list-item__sub-title"
+    >
+      December 27th, 1969
+    </span>
+  </div>
+  <h3
+    className="list-item__data"
+  >
+    $3,500.00
+  </h3>
+</Link>
 `;
