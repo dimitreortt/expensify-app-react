@@ -10,10 +10,8 @@ test('should login user', () => {
 })
 
 test('should logout user', () => {
-  const uid = '123'
-  const action = logout(uid)
+  const action = logout()
   expect(action).toEqual({
     type: 'LOGOUT',
-    uid
   })
 })
